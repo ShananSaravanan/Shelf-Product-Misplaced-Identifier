@@ -157,8 +157,8 @@ def compare_products(original_image, latest_image, original_predictions, latest_
     return differences
 
 # Paths to the original and latest images
-original_image_path = "C:/Users/Shanan/Desktop/Fuzzy/master.jpg"
-latest_image_path = "C:/Users/Shanan/Desktop/Fuzzy/shelf3.jpg"
+original_image_path = "images/master.jpg"
+latest_image_path = "images/shelf3.jpg"
 
 # Load images to get dimensions
 original_image = Image.open(original_image_path)
