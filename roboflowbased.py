@@ -6,8 +6,9 @@ import cv2
 # Initialize the inference client
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
-    api_key="gSfAWiuqi594ujNoivXP"
+    api_key="yKu5It01y8vjzfiOTnXA"
 )
+
 
 def detect_products(image_path, model_id, confidence_threshold=0.05):
     result = CLIENT.infer(image_path, model_id=model_id)
