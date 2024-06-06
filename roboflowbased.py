@@ -3,11 +3,36 @@ from PIL import Image, ImageDraw
 import numpy as np
 import cv2
 
+from skfuzzy import control as ctrl
+from skfuzzy import membership as fuzz
+
 # Initialize the inference client
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
     api_key="yKu5It01y8vjzfiOTnXA"
 )
+
+# Define fuzzy variables and membership functions
+status = ctrl.Antecedent(np.arange(0, 11, 1), 'status')
+color_status = ctrl.Antecedent(np.arange(0, 11, 1), 'color status')
+outline_text = ctrl.Consequent(np.arange(0, 21, 1), 'outline text')
+
+status['slight misplaced'] = fuzz.trimf(status.universe, [0, 0, 5])
+status['highly misplaced'] = fuzz.trimf(status.universe, [5, 10, 10])
+color_status['slight color change'] = fuzz.trimf(color_status.universe, [0, 0, 5])
+color_status['medium color change'] = fuzz.trimf(color_status.universe, [3, 5, 8])
+color_status['high color change'] = fuzz.trimf(color_status.universe, [6, 10, 10])
+outline_text['misplaced'] = fuzz.trimf(outline_text.universe, [0, 0, 5])
+outline_text['highly misplaced'] = fuzz.trimf(outline_text.universe, [5, 10, 10])
+outline_text['slightly misplaced'] = fuzz.trimf(outline_text.universe, [15, 20, 20])
+
+# Define fuzzy rules
+rule1 = ctrl.Rule(status['highly misplaced'] & color_status['slight color change'], outline_text['slightly misplaced'])
+rule2 = ctrl.Rule(status['highly misplaced'] & color_status['medium color change'], outline_text['highly misplaced'])
+rule3 = ctrl.Rule(status['highly misplaced'] & color_status['high color change'], outline_text['highly misplaced'])
+rule4 = ctrl.Rule(status['slight misplaced'] & color_status['slight color change'], outline_text['misplaced'])
+rule5 = ctrl.Rule(status['slight misplaced'] & color_status['medium color change'], outline_text['slightly misplaced'])
+rule6 = ctrl.Rule(status['slight misplaced'] & color_status['high color change'], outline_text['highly misplaced'])
 
 
 def detect_products(image_path, model_id, confidence_threshold=0.05):
@@ -81,7 +106,7 @@ def draw_bounding_boxes(image_path, predictions, save_path, differences=None):
                         outline_color = "purple"
         
         draw.rectangle([x0, y0, x1, y1], outline=outline_color)
-        draw.text((x0, y0), f"{class_label} ({confidence:.2f})", fill=outline_color)
+        draw.text((x0, y0), f"{class_label} ({confidence:.2f}) {outline_text}", fill=outline_color)
     
     image.save(save_path)
     image.show()
@@ -158,8 +183,8 @@ def compare_products(original_image, latest_image, original_predictions, latest_
     return differences
 
 # Paths to the original and latest images
-original_image_path = "images/master.jpg"
-latest_image_path = "images/shelf3.jpg"
+original_image_path = "C:/Users/User/Desktop/neutral network/Shelf-Product-Misplaced-Identifier-main/images/master.jpg"
+latest_image_path = "C:/Users/User/Desktop/neutral network/Shelf-Product-Misplaced-Identifier-main/images/shelf3.jpg"
 
 # Load images to get dimensions
 original_image = Image.open(original_image_path)
